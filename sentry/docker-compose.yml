@@ -1,0 +1,31 @@
+version: '2'
+services:
+  redis:
+    image: redis:alpine
+    restart: always
+    volumes:
+      - /srv/docker/sentry/redis:/var/lib/redis:Z
+
+  postgres:
+    image: postgres:alpine
+    volumes_from:
+      - /srv/docker/sentry/postgresql:/var/lib/postgresql:Z
+    restart: always
+    environment:
+    - DB_USER=sentry
+    - DB_PASS=sentry
+    - DB_NAME=sentry
+    - DB_EXTENSION=pg_trgm
+    
+  sentry:
+    build: .
+    ports:
+      - "8080"
+    links:
+      - postgres
+      - redis
+    entrypoint: sentry
+    command: start --noinput
+    env_file:
+      - environment.sh
+    restart: always

@@ -1,0 +1,26 @@
+version: '2'
+
+services:
+  mysql:
+    restart: always
+    image: mysql:latest
+    command:
+    - --loglevel warning
+    volumes:
+    - /srv/docker/mysql:/var/lib/mysql:Z
+
+  seafile:
+    build: .
+    image: jenserat/seafile:latest
+    ports:
+      - "10001:10001"
+      - "12001:12001"
+      - "8000:8000"
+      - "8080:8080"
+      - "8082:8082"
+    links:
+      - mysql
+    valumes: 
+      - /srv/docker/seafile:/opt/seafile
+    environment:
+      - autostart=true

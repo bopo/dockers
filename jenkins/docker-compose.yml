@@ -1,0 +1,10 @@
+version: '2'
+services:
+  jenkins:
+      image: 'jenkins:alpine'
+      ports:
+        - '18080:8080'
+        - '50000:50000'
+      volumes:
+        - /var/lib/docker/jenkins:/var/jenkins_home
+      restart: always
