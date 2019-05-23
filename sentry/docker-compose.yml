@@ -3,13 +3,13 @@ services:
   redis:
     image: redis:alpine
     restart: always
-    volumes:
-      - /srv/docker/sentry/redis:/var/lib/redis:Z
+    # volumes:
+    #   - ./volumes/redis:/var/lib/redis:Z
 
   postgres:
     image: postgres:alpine
-    volumes_from:
-      - /srv/docker/sentry/postgresql:/var/lib/postgresql:Z
+    # volumes:
+      # - ./volumes/postgresql:/var/lib/postgresql:Z
     restart: always
     environment:
     - DB_USER=sentry
@@ -18,14 +18,50 @@ services:
     - DB_EXTENSION=pg_trgm
     
   sentry:
-    build: .
+    image: sentry:8.10
     ports:
-      - "8080"
+      - "9000:9000"
     links:
       - postgres
       - redis
-    entrypoint: sentry
-    command: start --noinput
     env_file:
       - environment.sh
     restart: always
+    environment:
+    - SENTRY_SECRET_KEY=123123wdfser234sdfsrf42sdf
+    - SENTRY_REDIS_HOST=redis
+    - SENTRY_POSTGRES_HOST=postgres
+    # - SENTRY_POSTGRES_USER=sentry
+    # - SENTRY_POSTGRES_PASSWORD=sentry
+
+
+  worker:
+    image: sentry:8.10
+    links:
+      - postgres
+      - redis
+    env_file:
+      - environment.sh
+    restart: always
+    command: run worker
+    environment:
+    - SENTRY_SECRET_KEY=12312313123213
+    - SENTRY_REDIS_HOST=redis
+    - SENTRY_POSTGRES_HOST=postgres
+
+
+  cron:
+    image: sentry:8.10
+    links:
+      - postgres
+      - redis
+    env_file:
+      - environment.sh
+    restart: always
+    command: run cron
+    environment:
+    - SENTRY_SECRET_KEY=12312313123213
+    - SENTRY_REDIS_HOST=redis
+    - SENTRY_POSTGRES_HOST=postgres
+
+
